@@ -53,7 +53,22 @@ public class GatewaySampleApplication {
 		SpringApplication.run(GatewaySampleApplication.class, args);
 	}
 
+	/**
+	 * 自定义过滤器
+	 */
 	@Bean
+	public RouteLocator myRoutes(RouteLocatorBuilder builder) {
+		String httpUri = "http://httpbin.org:80";
+		return builder.routes()
+				.route(p -> p
+						.path("/get")
+						.filters(f -> f.addRequestHeader("Hello", "World!!!"))
+						.uri(httpUri)
+				)
+				.build();
+	}
+
+//	@Bean
 	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
 		//@formatter:off
 		// String uri = "http://httpbin.org:80";
