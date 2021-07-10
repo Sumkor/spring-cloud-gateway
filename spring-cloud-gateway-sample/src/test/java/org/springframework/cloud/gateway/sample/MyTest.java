@@ -40,6 +40,36 @@ public class MyTest {
 	 */
 
 	/**
+	 * 请求流程
+	 *
+	 * 1. 从 netty 中接收到请求，传递给 reactor 的 Mono 对象
+	 * @see reactor.core.publisher.Mono#subscribe(org.reactivestreams.Subscriber)
+	 *
+	 * 2. 传递到 Spring WebFlux
+	 * @see org.springframework.web.reactive.DispatcherHandler
+	 * @see org.springframework.web.reactive.handler.AbstractHandlerMapping#getHandler(org.springframework.web.server.ServerWebExchange)
+	 *
+	 * 3. 传递到 Spring gateway 的 handler
+	 * @see org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping#getHandlerInternal(org.springframework.web.server.ServerWebExchange)
+	 * @see org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping#lookupRoute(org.springframework.web.server.ServerWebExchange)
+	 * 其中，routeLocator.getRoutes() 得到了在 {@link GatewaySampleApplication#myRoutes} 中配置的路由规则对象。
+	 *
+	 * 3.1 执行路由规则匹配
+	 * 进入
+	 * @see org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFactory#apply(org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFactory.Config)
+	 * 执行其中的 GatewayPredicate#test 方法。
+	 * 这里判断 path 为 "/get"，符合该过滤器规则。
+	 *
+	 * 3.2 执行过滤器链
+	 * @see org.springframework.cloud.gateway.handler.FilteringWebHandler#handle(org.springframework.web.server.ServerWebExchange)
+	 * @see org.springframework.cloud.gateway.handler.FilteringWebHandler.DefaultGatewayFilterChain#filter(org.springframework.web.server.ServerWebExchange)
+	 * 按 order 遍历所有的过滤器，当执行用户配置的过滤器，进入
+	 * @see org.springframework.cloud.gateway.filter.factory.AddRequestHeaderGatewayFilterFactory#apply(org.springframework.cloud.gateway.filter.factory.AbstractNameValueGatewayFilterFactory.NameValueConfig)
+	 * 执行其中的 GatewayFilter#filter 方法。
+	 * 这里为请求头添加指定信息。
+	 */
+
+	/**
 	 * 访问：http://localhost:8080/get
 	 * 返回：http://httpbin.org:80 地址的 JSON 数据
 	 * 日志内容如下：
